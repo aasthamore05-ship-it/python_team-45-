@@ -2,6 +2,26 @@ from database.db import conn, cursor
 from models.account import Account
 
 
+def validate_account_type(account_type):
+    valid_types = {"savings", "current"}
+    if account_type.lower() not in valid_types:
+        raise ValueError("Account type must be Savings or Current")
+    return account_type.title()
+
+
+def validate_balance(balance):
+    if balance < 0:
+        raise ValueError("Balance cannot be negative")
+    return balance
+
+
+def validate_status(status):
+    valid_statuses = {"active", "frozen", "closed"}
+    if status.lower() not in valid_statuses:
+        raise ValueError("Status must be Active, Frozen, or Closed")
+    return status.title()
+
+
 # ---------------- OPEN ACCOUNT ---------------- #
 
 def open_account():
@@ -108,11 +128,26 @@ def update_account():
         print("Account Not Found")
         return
 
-    account_type = input("Enter New Account Type : ")
+    while True:
+        try:
+            account_type = validate_account_type(input("Enter New Account Type (Savings/Current): ").strip())
+            break
+        except ValueError as e:
+            print(e)
 
-    balance = float(input("Enter New Balance : "))
+    while True:
+        try:
+            balance = validate_balance(float(input("Enter New Balance : ")))
+            break
+        except ValueError as e:
+            print(e)
 
-    status = input("Enter Status (Active/Frozen/Closed): ")
+    while True:
+        try:
+            status = validate_status(input("Enter Status (Active/Frozen/Closed): ").strip())
+            break
+        except ValueError as e:
+            print(e)
 
     update_query = """
     UPDATE account
@@ -139,6 +174,18 @@ def update_account():
 def close_account():
 
     account_no = int(input("Enter Account Number : "))
+
+    check_query = "SELECT account_status FROM account WHERE account_no=%s"
+    cursor.execute(check_query, (account_no,))
+    existing = cursor.fetchone()
+
+    if existing is None:
+        print("Account Not Found")
+        return
+
+    if existing[0].lower() == "closed":
+        print("\nAccount is already closed\n")
+        return
 
     query = """
     UPDATE account
