@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from database.db import conn, cursor
 from models.account import Account
 
@@ -20,6 +22,23 @@ def validate_status(status):
     if status.lower() not in valid_statuses:
         raise ValueError("Status must be Active, Frozen, or Closed")
     return status.title()
+
+
+def validate_opening_date(opening_date):
+    try:
+        parsed_date = datetime.strptime(opening_date, "%Y-%m-%d")
+    except ValueError:
+        raise ValueError("Opening date must be in YYYY-MM-DD format")
+    return parsed_date.strftime("%Y-%m-%d")
+
+
+def get_account_number(prompt="Enter Account Number : "):
+    while True:
+        account_input = input(prompt).strip()
+        try:
+            return int(account_input)
+        except ValueError:
+            print("Account Number must be a valid number")
 
 
 # ---------------- OPEN ACCOUNT ---------------- #
@@ -53,7 +72,12 @@ def open_account():
         except ValueError as e:
             print(e)
 
-    opening_date = input("Enter Opening Date (YYYY-MM-DD): ")
+    while True:
+        try:
+            opening_date = validate_opening_date(input("Enter Opening Date (YYYY-MM-DD): ").strip())
+            break
+        except ValueError as e:
+            print(e)
 
     account = Account(
         None,
@@ -113,7 +137,7 @@ def view_account():
 
 def search_account():
 
-    account_no = int(input("Enter Account Number : "))
+    account_no = get_account_number()
 
     query = "SELECT * FROM account WHERE account_no=%s"
 
@@ -139,7 +163,7 @@ def search_account():
 
 def update_account():
 
-    account_no = int(input("Enter Account Number : "))
+    account_no = get_account_number()
 
     query = "SELECT * FROM account WHERE account_no=%s"
 
@@ -197,7 +221,7 @@ def update_account():
 
 def close_account():
 
-    account_no = int(input("Enter Account Number : "))
+    account_no = get_account_number()
 
     check_query = "SELECT account_status FROM account WHERE account_no=%s"
     cursor.execute(check_query, (account_no,))
