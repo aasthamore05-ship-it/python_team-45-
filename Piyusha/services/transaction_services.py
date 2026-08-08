@@ -1,6 +1,15 @@
 from database.db import conn, cursor
 
 
+def get_account_number(prompt="Enter Account Number : "):
+    while True:
+        account_input = input(prompt).strip()
+        try:
+            return int(account_input)
+        except ValueError:
+            print("Account Number must be a valid number")
+
+
 # ---------------- VIEW TRANSACTIONS ---------------- #
 
 def view_transactions():
@@ -35,7 +44,7 @@ def view_transactions():
 
 def search_transaction():
 
-    account_no = int(input("Enter Account Number : "))
+    account_no = get_account_number()
 
     query = """
     SELECT * FROM transactions

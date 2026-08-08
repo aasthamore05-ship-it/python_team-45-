@@ -32,30 +32,31 @@ def validate_opening_date(opening_date):
     return parsed_date.strftime("%Y-%m-%d")
 
 
-def get_account_number(prompt="Enter Account Number : "):
+def get_int_input(prompt="Enter Number : "):
     while True:
-        account_input = input(prompt).strip()
+        input_value = input(prompt).strip()
         try:
-            return int(account_input)
+            return int(input_value)
         except ValueError:
-            print("Account Number must be a valid number")
+            print("Input must be a valid number")
 
 
 # ---------------- OPEN ACCOUNT ---------------- #
 
 def open_account():
 
-    while True:
-        try:
-            customer_id = int(input("Enter Customer ID : "))
-            break
-        except ValueError:
-            print("Customer ID must be a valid number")
+    customer_id = get_int_input("Enter Customer ID : ")
 
     customer_check_query = "SELECT customer_id FROM customer WHERE customer_id=%s"
     cursor.execute(customer_check_query, (customer_id,))
     if cursor.fetchone() is None:
         print("\nCustomer Not Found. Cannot open account.\n")
+        return
+
+    account_exists_query = "SELECT account_no FROM account WHERE customer_id=%s"
+    cursor.execute(account_exists_query, (customer_id,))
+    if cursor.fetchone() is not None:
+        print("\nThis customer already has an account. Cannot open another account under the current schema.\n")
         return
 
     while True:
@@ -137,7 +138,7 @@ def view_account():
 
 def search_account():
 
-    account_no = get_account_number()
+    account_no = get_int_input()
 
     query = "SELECT * FROM account WHERE account_no=%s"
 
@@ -163,7 +164,7 @@ def search_account():
 
 def update_account():
 
-    account_no = get_account_number()
+    account_no = get_int_input()
 
     query = "SELECT * FROM account WHERE account_no=%s"
 
@@ -221,7 +222,7 @@ def update_account():
 
 def close_account():
 
-    account_no = get_account_number()
+    account_no = get_int_input()
 
     check_query = "SELECT account_status FROM account WHERE account_no=%s"
     cursor.execute(check_query, (account_no,))
