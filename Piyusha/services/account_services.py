@@ -26,9 +26,33 @@ def validate_status(status):
 
 def open_account():
 
-    customer_id = int(input("Enter Customer ID : "))
-    account_type = input("Enter Account Type (Savings/Current): ")
-    balance = float(input("Enter Opening Balance : "))
+    while True:
+        try:
+            customer_id = int(input("Enter Customer ID : "))
+            break
+        except ValueError:
+            print("Customer ID must be a valid number")
+
+    customer_check_query = "SELECT customer_id FROM customer WHERE customer_id=%s"
+    cursor.execute(customer_check_query, (customer_id,))
+    if cursor.fetchone() is None:
+        print("\nCustomer Not Found. Cannot open account.\n")
+        return
+
+    while True:
+        try:
+            account_type = validate_account_type(input("Enter Account Type (Savings/Current): ").strip())
+            break
+        except ValueError as e:
+            print(e)
+
+    while True:
+        try:
+            balance = validate_balance(float(input("Enter Opening Balance : ")))
+            break
+        except ValueError as e:
+            print(e)
+
     opening_date = input("Enter Opening Date (YYYY-MM-DD): ")
 
     account = Account(
